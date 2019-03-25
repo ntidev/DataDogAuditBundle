@@ -1,0 +1,36 @@
+DataDog\AuditBundle\Entity\AuditRequest:
+  type: entity
+  table: audit_request
+  id:
+    id:
+      type: bigint
+      generator:
+        strategy: IDENTITY
+
+  fields:
+    method:
+      length: 255
+      type: string
+    controller:
+      length: 255
+      type: string
+    route:
+      length: 255
+      type: string
+    routeParams:
+      type: text
+    ip:
+      length: 255
+      type: string
+    userName:
+      length: 255
+      type: string
+    portal:
+      length: 255
+      type: string
+    queryData:
+      type: text
+    data:
+      type: text
+    createdOn:
+      type: datetime

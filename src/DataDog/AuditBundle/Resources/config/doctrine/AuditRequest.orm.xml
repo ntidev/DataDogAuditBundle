@@ -1,0 +1,24 @@
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+  http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+  <entity name="DataDog\AuditBundle\Entity\AuditRequest" table="audit_request">
+
+    <id name="id" type="integer" column="id">
+      <generator strategy="IDENTITY"/>
+    </id>
+
+    <field name="method" length="255" nullable="true" />
+    <field name="controller" length="255" nullable="true" />
+    <field name="route" length="255" nullable="true" />
+    <field name="routeParams" type="text" nullable="true" />
+    <field name="ip" length="255" nullable="true" />
+    <field name="userName" length="255" nullable="true" />
+    <field name="portal" length="255" nullable="true" />
+    <field name="queryData" type="text" nullable="true" />
+    <field name="data" type="text" nullable="true" />
+    <field name="createdOn" type="datetime"  nullable="true" />
+  </entity>
+
+</doctrine-mapping>

@@ -266,7 +266,7 @@ class AuditSubscriber implements EventSubscriber
             'source' => $this->assoc($em, $entity),
             'target' => null,
             'blame' => $this->blame($em),
-            'diff' => json_encode($diff),
+            'diff' => $diff,
             'tbl' => $meta->table['name'],
         ]);
     }
@@ -283,7 +283,7 @@ class AuditSubscriber implements EventSubscriber
             'source' => $this->assoc($em, $entity),
             'target' => null,
             'blame' => $this->blame($em),
-            'diff' => json_encode($diff),
+            'diff' => $diff,
             'tbl' => $meta->table['name'],
         ]);
     }

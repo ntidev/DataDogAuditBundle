@@ -40,6 +40,15 @@ class Configuration implements ConfigurationInterface
             ->end()
         ;
 
+        $rootNode
+            ->children()
+                ->arrayNode('audit_request')
+                    ->children()
+                        ->scalarNode("enabled")->defaultTrue()->end()
+                ->end()
+            ->end()
+        ;
+
         return $treeBuilder;
     }
 

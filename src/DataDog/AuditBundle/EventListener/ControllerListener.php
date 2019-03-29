@@ -22,6 +22,10 @@ class ControllerListener
 
     public function onKernelController(FilterControllerEvent $event){
 
+        if(!$this->container->getParameter('nti_audit.audit_request.enabled')){
+            return;
+        }
+
         if (!is_array($controllers = $event->getController())) {
             return;
         }

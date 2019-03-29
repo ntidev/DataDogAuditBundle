@@ -9,6 +9,8 @@ use Symfony\Component\DependencyInjection\Loader;
 
 class DataDogAuditExtension extends Extension
 {
+    private $defaultConfiguration = array('audit_request' => ['enabled' => false]);
+
     /**
      * {@inheritdoc}
      */
@@ -27,5 +29,11 @@ class DataDogAuditExtension extends Extension
         } else if (isset($config['unaudited_entities'])) {
             $auditSubscriber->addMethodCall('addUnauditedEntities', array($config['unaudited_entities']));
         }
+
+        if(isset($config['audit_request']) && !empty($config['audit_request'])){
+            $this->defaultConfiguration['audit_request']['enabled'] = $config['audit_request']['enabled'];
+        }
+
+        $container->setParameter('nti_audit.audit_request.enabled', $this->defaultConfiguration['audit_request']['enabled']);
     }
 }

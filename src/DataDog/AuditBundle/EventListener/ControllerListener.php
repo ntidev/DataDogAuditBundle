@@ -1,17 +1,14 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: IMendoza
- * Date: 3/22/2019
- * Time: 9:59 AM
- */
 
 namespace DataDog\AuditBundle\EventListener;
 
+use Doctrine\Common\Annotations\AnnotationReader;
+use ReflectionObject;
 use DataDog\AuditBundle\Entity\AuditRequest;
 use DataDog\AuditBundle\DBAL\AuditLogger;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use DataDog\AuditBundle\Annotations\NTIAudit;
 
 class ControllerListener
 {
@@ -24,6 +21,25 @@ class ControllerListener
     }
 
     public function onKernelController(FilterControllerEvent $event){
+
+        if (!is_array($controllers = $event->getController())) {
+            return;
+        }
+
+        list($controller, $methodName) = $controllers;
+        $reflectionClass = new \ReflectionClass($controller);
+
+        // Controller
+        $reader = new \Doctrine\Common\Annotations\AnnotationReader();
+        $classAnnotation = $reader->getClassAnnotation($reflectionClass, NTIAudit::class);
+
+        // Method
+        $reflectionMethod = $reflectionClass->getMethod($methodName);
+        $methodAnnotation = $reader->getMethodAnnotation($reflectionMethod, NTIAudit::class);
+
+        if(!($classAnnotation || $methodAnnotation)){
+            return;
+        }
 
         // Get Request
         $request = $event->getRequest();

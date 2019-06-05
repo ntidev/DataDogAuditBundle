@@ -17,7 +17,7 @@ managed through standard **ORM** operations.
 
 First, install it with composer:
 
-    composer require data-dog/audit-bundle
+    composer require nti/audit-bundle
 
 Then, add it in your **AppKernel** bundles.
 

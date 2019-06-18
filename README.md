@@ -40,6 +40,7 @@ Using Query:
     CREATE TABLE audit_request (id INT AUTO_INCREMENT NOT NULL, method VARCHAR(255) DEFAULT NULL, controller VARCHAR(255) DEFAULT NULL, route VARCHAR(255) DEFAULT NULL, route_params LONGTEXT DEFAULT NULL, ip VARCHAR(255) DEFAULT NULL, user_name VARCHAR(255) DEFAULT NULL,portal VARCHAR(255) DEFAULT NULL, query_data LONGTEXT DEFAULT NULL, data LONGTEXT DEFAULT NULL, created_on DATETIME DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET UTF8 COLLATE UTF8_unicode_ci ENGINE = InnoDB;     ALTER TABLE audit_logs ADD CONSTRAINT FK_D62F2858953C1C61 FOREIGN KEY (source_id) REFERENCES audit_associations (id);
     ALTER TABLE audit_logs ADD CONSTRAINT FK_D62F2858158E0B66 FOREIGN KEY (target_id) REFERENCES audit_associations (id);
     ALTER TABLE audit_logs ADD CONSTRAINT FK_D62F28588C082A2E FOREIGN KEY (blame_id) REFERENCES audit_associations(id);
+    ALTER TABLE audit_associations ADD created_on DATETIME NOT NULL;
 
 Using Doctrine Schema:
     
@@ -93,6 +94,11 @@ Sometimes, it is also possible, that you want to create audit log entries only f
 
 You can specify either audited or unaudited entities. If both are specified, only audited entities would be taken into account.
 
+### Command
+
+For delete audit data:
+
+    php bin/console nti:audit:delete {qtyDays}
 
 ## License
 

@@ -1,5 +1,6 @@
 DataDog\AuditBundle\Entity\AuditLog:
   type: entity
+  repositoryClass: DataDog\AuditBundle\Repository\AuditLogRepository
   table: audit_logs
   id:
     id:

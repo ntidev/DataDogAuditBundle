@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
+ * @ORM\Entity(repositoryClass="DataDog\AuditBundle\Repository\AssociationRepository")
  * @ORM\Table(name="audit_associations")
  */
 class Association
@@ -42,6 +43,11 @@ class Association
      */
     private $class;
 
+    /**
+     *@ORM\Column(type="datetime")
+     */
+    private $createdOn;
+
     public function getId()
     {
         return $this->id;
@@ -77,4 +83,10 @@ class Association
     {
         return $this->class;
     }
+
+    public function getCreatedOn()
+    {
+        return $this->createdOn;
+    }
+
 }

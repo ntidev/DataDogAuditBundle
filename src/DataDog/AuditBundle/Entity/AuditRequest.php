@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Table(name="audit_request")
+ * @ORM\Entity(repositoryClass="DataDog\AuditBundle\Repository\AuditRequestRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class AuditRequest

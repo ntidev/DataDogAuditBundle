@@ -330,6 +330,7 @@ class AuditSubscriber implements EventSubscriber
 
         $meta = $em->getClassMetadata(AuditLog::class);
         $data['loggedAt'] = new \DateTime();
+
         $idx = 1;
         foreach ($meta->reflFields as $name => $f) {
             if ($meta->isIdentifier($name)) {
@@ -403,6 +404,7 @@ class AuditSubscriber implements EventSubscriber
             $em->getUnitOfWork()->initializeObject($association); // ensure that proxies are initialized
             $res['fk'] = (string)$this->id($em, $association);
             $res['label'] = $this->label($em, $association);
+            $res['createdOn'] = new \DateTime();
         } catch (\Exception $e) {
             $res['fk'] = (string) $association->getId();
         }

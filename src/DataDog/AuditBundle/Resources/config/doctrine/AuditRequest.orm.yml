@@ -1,5 +1,6 @@
 DataDog\AuditBundle\Entity\AuditRequest:
   type: entity
+  repositoryClass: DataDog\AuditBundle\Repository\AuditRequestRepository
   table: audit_request
   id:
     id:

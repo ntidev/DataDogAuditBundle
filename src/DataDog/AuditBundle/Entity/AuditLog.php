@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
+ * @ORM\Entity(repositoryClass="DataDog\AuditBundle\Repository\AuditLogRepository")
  * @ORM\Table(name="audit_logs")
  */
 class AuditLog
@@ -92,4 +93,5 @@ class AuditLog
     {
         return $this->loggedAt;
     }
+    
 }

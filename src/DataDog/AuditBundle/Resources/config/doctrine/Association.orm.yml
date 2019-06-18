@@ -1,5 +1,6 @@
 DataDog\AuditBundle\Entity\Association:
   type: entity
+  repositoryClass: DataDog\AuditBundle\Repository\AssociationRepository
   table: audit_associations
   id:
     id:
@@ -19,3 +20,5 @@ DataDog\AuditBundle\Entity\Association:
       type: string
     class:
       type: string
+    createdOn:
+      type: datetime

@@ -33,6 +33,7 @@ class AuditLogController extends Controller {
         $result = $this->get(AuditLogService::class)->getAll($options);
         $logs = json_decode($this->container->get('jms_serializer')->serialize($result["data"], 'json') ,true);
         $result["data"] = $logs;
+        // dd($result["data"]);
         return new DataTableRestResponse($result);
     }
 

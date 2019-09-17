@@ -6,6 +6,7 @@ use DataDog\AuditBundle\DBAL\AuditLogger;
 use DataDog\AuditBundle\Entity\AuditLog;
 use DataDog\AuditBundle\Entity\Association;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\DBAL\Types\Type;
@@ -42,12 +43,14 @@ class AuditSubscriber implements EventSubscriber
 
     protected $assocInsertStmt;
     protected $auditInsertStmt;
+    protected $container;
 
     /** @var UserInterface */
     protected $blameUser;
 
-    public function __construct(TokenStorage $securityTokenStorage)
+    public function __construct(TokenStorage $securityTokenStorage, ContainerInterface $container)
     {
+        $this->container = $container;
         $this->securityTokenStorage = $securityTokenStorage;
     }
 
@@ -380,8 +383,8 @@ class AuditSubscriber implements EventSubscriber
                 $colName = $meta->getSingleAssociationJoinColumnName($fieldName);
                 $assocMeta = $em->getClassMetadata($mapping['targetEntity']);
                 $diff[$fieldName] = [
-                    'old' => $this->assoc($em, $old),
-                    'new' => $this->assoc($em, $new),
+                    'old' => $this->assoc($em, $old, true),
+                    'new' => $this->assoc($em, $new, true),
                     'col' => $colName,
                 ];
             }
@@ -389,7 +392,7 @@ class AuditSubscriber implements EventSubscriber
         return $diff;
     }
 
-    protected function assoc(EntityManager $em, $association = null)
+    protected function assoc(EntityManager $em, $association = null, $diff = false)
     {
         if (null === $association) {
             return null;
@@ -402,8 +405,8 @@ class AuditSubscriber implements EventSubscriber
             $meta = $em->getClassMetadata($meta);
             $res['tbl'] = $meta->table['name'];
             $em->getUnitOfWork()->initializeObject($association); // ensure that proxies are initialized
-            $res['fk'] = (string)$this->id($em, $association);
-            $res['label'] = $this->label($em, $association);
+            $res['fk'] = $this->getUser() != null && $diff == false ? $this->getUser()->getId() : (string)$this->id($em, $association);
+            $res['label'] = $this->label($em, $association, $diff);
             $res['createdOn'] = new \DateTime();
         } catch (\Exception $e) {
             $res['fk'] = (string) $association->getId();
@@ -422,13 +425,15 @@ class AuditSubscriber implements EventSubscriber
         }, explode('\\', $className)));
     }
 
-    protected function label(EntityManager $em, $entity)
+    protected function label(EntityManager $em, $entity, $diff = false)
     {
         if (is_callable($this->labeler)) {
             return call_user_func($this->labeler, $entity);
         }
         $meta = $em->getClassMetadata(get_class($entity));
         switch (true) {
+        case $this->getUser() != null && $diff == false:
+            return $this->getUser()->getUsername();        
         case $meta->hasField('title'):
             return $meta->getReflectionProperty('title')->getValue($entity);
         case $meta->hasField('name'):
@@ -473,5 +478,25 @@ class AuditSubscriber implements EventSubscriber
     public function setBlameUser(UserInterface $user)
     {
         $this->blameUser = $user;
+    }
+
+    /**
+     * @return UserInterface|null
+     */
+    public function getUser()
+    {
+
+        if (null === $token = $this->container->get('security.token_storage')->getToken()) {
+            // no authentication information is available
+            return null;
+        }
+
+        /** @var UserInterface $user */
+        if (!is_object($user = $token->getUser())) {
+            // e.g. anonymous authentication
+            return null;
+        }
+
+        return $user;
     }
 }

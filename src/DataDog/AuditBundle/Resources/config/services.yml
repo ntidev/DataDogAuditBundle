@@ -1,4 +1,20 @@
 services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  DataDog\:
+    resource: '../../../../../src/DataDog/*'
+    # you can exclude directories or files
+    # but if a service is unused, it's removed anyway
+    exclude: '../../../../../src/DataDog/AuditBundle/{Entity,Repository,Service}'
+
+  # actual services to be tagged as public
+  DataDog\AuditBundle\Service\:
+    resource: '../../../../../src/DataDog/AuditBundle/Service'
+    public: true
+
   datadog.event_subscriber.audit:
     class: DataDog\AuditBundle\EventSubscriber\AuditSubscriber
     arguments: ["@security.token_storage"]

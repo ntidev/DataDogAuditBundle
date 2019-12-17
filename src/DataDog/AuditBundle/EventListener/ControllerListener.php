@@ -89,6 +89,13 @@ class ControllerListener
         $queryData = $request->getQueryString();
         $data = $request->getContent();
 
+        // Filter sensitive data
+        if (is_string($data) && (preg_match('/\bcreditCard\b/', $data) || preg_match('/\bcredit_card\b/', $data))) {
+            $decoded = json_decode($data, true);
+            $decoded = $this->filterRecursive($decoded);
+            $data = json_encode($decoded);
+        }
+
         // Set Object
         $audit = new AuditRequest();
         $audit->setMethod($method);
@@ -109,5 +116,18 @@ class ControllerListener
         }catch (\Exception $ex){
 
         }
+    }
+
+    function filterRecursive($array){
+        foreach($array as $key => $value){
+            if($key == "creditCard" || $key == "credit_card"){
+                $value = "";
+                return $value;
+            }
+            if(is_array($value)){
+                $array[$key] = $this->filterRecursive($value);
+            } 
+        }
+        return $array;
     }
 }

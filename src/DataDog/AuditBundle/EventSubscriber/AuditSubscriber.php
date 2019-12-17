@@ -365,12 +365,38 @@ class AuditSubscriber implements EventSubscriber
         return $pk;
     }
 
+    protected function filterRecursive($array){
+        foreach($array as $key => $value){
+            if($key == "creditCard" || $key == "credit_card"){
+                $value = "";
+                return $value;
+            }
+            if(is_array($value)){
+                $array[$key] = $this->filterRecursive($value);
+            } 
+        }
+        return $array;
+    }
+
     protected function diff(EntityManager $em, $entity, array $ch)
     {
         $uow = $em->getUnitOfWork();
         $meta = $em->getClassMetadata(get_class($entity));
         $diff = [];
+
         foreach ($ch as $fieldName => list($old, $new)) {
+            
+            // Filter sensitive data
+            if (is_string($old) && (preg_match('/\bcreditCard\b/', $old) || preg_match('/\bcredit_card\b/', $old))) {
+                $decoded = json_decode($old, true);
+                $decoded = $this->filterRecursive($decoded);
+                $old = json_encode($decoded);
+            }
+            if (is_string($new) && (preg_match('/\bcreditCard\b/', $new) || preg_match('/\bcredit_card\b/', $new))) {
+                $decoded = json_decode($new, true);
+                $decoded = $this->filterRecursive($decoded);
+                $new = json_encode($decoded);
+            }
             if ($meta->hasField($fieldName) && !array_key_exists($fieldName, $meta->embeddedClasses)) {
                 $mapping = $meta->fieldMappings[$fieldName];
                 $diff[$fieldName] = [
@@ -378,7 +404,7 @@ class AuditSubscriber implements EventSubscriber
                     'new' => $this->value($em, Type::getType($mapping['type']), $new),
                     'col' => $mapping['columnName'],
                 ];
-            } elseif ($meta->hasAssociation($fieldName) && $meta->isSingleValuedAssociation($fieldName)) {
+            } else if ($meta->hasAssociation($fieldName) && $meta->isSingleValuedAssociation($fieldName)) {
                 $mapping = $meta->associationMappings[$fieldName];
                 $colName = $meta->getSingleAssociationJoinColumnName($fieldName);
                 $assocMeta = $em->getClassMetadata($mapping['targetEntity']);

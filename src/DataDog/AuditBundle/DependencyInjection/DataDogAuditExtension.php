@@ -34,6 +34,17 @@ class DataDogAuditExtension extends Extension
             $this->defaultConfiguration['audit_request']['enabled'] = $config['audit_request']['enabled'];
         }
 
+        if (isset($config['unaudited_fields']) && !empty($config['unaudited_fields'])) {
+            $auditSubscriber->addMethodCall('addUnauditedFields', array($config['unaudited_fields']));
+        }
+
+        if (isset($config['unaudited_request_fields']) && !empty($config['unaudited_request_fields'])) {
+            $this->defaultConfiguration['unaudited_request_fields'] = $config['unaudited_request_fields'];
+            $container->setParameter('nti_audit.audit_request.unaudited_request_fields', $this->defaultConfiguration['unaudited_request_fields']);
+        } else {
+            $container->setParameter('nti_audit.audit_request.unaudited_request_fields', array());
+        }
+
         $container->setParameter('nti_audit.audit_request.enabled', $this->defaultConfiguration['audit_request']['enabled']);
     }
 }

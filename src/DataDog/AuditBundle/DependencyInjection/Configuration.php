@@ -49,6 +49,26 @@ class Configuration implements ConfigurationInterface
             ->end()
         ;
 
+        $rootNode->children()
+            ->arrayNode('unaudited_fields')
+                ->arrayPrototype()
+                    ->arrayPrototype()
+                        ->prototype('scalar')->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+
+        $rootNode
+        ->children()
+            ->arrayNode('unaudited_request_fields')
+                ->canBeUnset()
+                ->performNoDeepMerging()
+                ->prototype('scalar')->end()
+            ->end()
+        ->end()
+        ;
+
         return $treeBuilder;
     }
 

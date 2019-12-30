@@ -34,6 +34,7 @@ class AuditSubscriber implements EventSubscriber
 
     protected $auditedEntities = [];
     protected $unauditedEntities = [];
+    protected $unauditedFields = [];
 
     protected $inserted = []; // [$source, $changeset]
     protected $updated = []; // [$source, $changeset]
@@ -78,6 +79,15 @@ class AuditSubscriber implements EventSubscriber
         // use entity names as array keys for easier lookup
         foreach ($unauditedEntities as $unauditedEntity) {
             $this->unauditedEntities[$unauditedEntity] = true;
+        }
+    }
+
+    public function addUnauditedFields(array $unauditedFields)
+    {
+        foreach ($unauditedFields as $unauditedField) {
+            foreach ($unauditedField as $key => $unauditedFieldChild) {
+                $this->unauditedFields[$key] = $unauditedFieldChild;
+            }
         }
     }
 
@@ -365,6 +375,43 @@ class AuditSubscriber implements EventSubscriber
         return $pk;
     }
 
+    
+    function is_json($string) {
+        json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE) ? true : false;
+    }
+
+    protected function filterRecursive($unauditedFields, $array){
+        foreach($array as $key => $value){
+            if(is_string($key) && in_array($key, $unauditedFields)){
+                $array[$key] = "*";
+            }
+            if(is_array($value)){
+                $array[$key] = $this->filterRecursive($unauditedFields, $value);
+            }
+        }
+        return $array;
+    }
+
+    protected function removeUnauditedFields($fieldName, $unauditedFields, $data){
+        if(is_string($fieldName) && in_array($fieldName, $unauditedFields)){
+            return "*";
+        }
+        foreach($unauditedFields as $unauditedField){
+            if(is_string($data) && preg_match('/\b'.$unauditedField.'\b/', $data)){
+                if ($this->is_json($data)) {
+                    $decoded = json_decode($data, true);
+                    $decoded = $this->filterRecursive($unauditedFields, $decoded);
+                    $data = json_encode($decoded);
+                    return $data;
+                } else {
+                    return "*";
+                }
+            }
+        }
+        return $data;
+    }
+
     protected function diff(EntityManager $em, $entity, array $ch)
     {
         $uow = $em->getUnitOfWork();
@@ -372,6 +419,13 @@ class AuditSubscriber implements EventSubscriber
         $diff = [];
         foreach ($ch as $fieldName => list($old, $new)) {
             if ($meta->hasField($fieldName) && !array_key_exists($fieldName, $meta->embeddedClasses)) {
+
+                // Filter sensitive data
+                if(array_key_exists($meta->getName(), $this->unauditedFields)) {
+                    $old = $this->removeUnauditedFields($fieldName, $this->unauditedFields[$meta->getName()], $old);
+                    $new = $this->removeUnauditedFields($fieldName, $this->unauditedFields[$meta->getName()], $new);  
+                }
+
                 $mapping = $meta->fieldMappings[$fieldName];
                 $diff[$fieldName] = [
                     'old' => $this->value($em, Type::getType($mapping['type']), $old),
@@ -382,11 +436,26 @@ class AuditSubscriber implements EventSubscriber
                 $mapping = $meta->associationMappings[$fieldName];
                 $colName = $meta->getSingleAssociationJoinColumnName($fieldName);
                 $assocMeta = $em->getClassMetadata($mapping['targetEntity']);
-                $diff[$fieldName] = [
-                    'old' => $this->assoc($em, $old, true),
-                    'new' => $this->assoc($em, $new, true),
-                    'col' => $colName,
-                ];
+                
+                // Filter sensitive data
+                if(array_key_exists($meta->getName(), $this->unauditedFields)) {
+                    $old = $this->removeUnauditedFields($fieldName, $this->unauditedFields[$meta->getName()], $old);
+                    $new = $this->removeUnauditedFields($fieldName, $this->unauditedFields[$meta->getName()], $new);
+                } 
+
+                if($old == "*" && $new == "*"){
+                    $diff[$fieldName] = [
+                        'old' => $old,
+                        'new' => $new,
+                        'col' => $colName,
+                    ];
+                } else {
+                    $diff[$fieldName] = [
+                        'old' => $this->assoc($em, $old, true),
+                        'new' => $this->assoc($em, $new, true),
+                        'col' => $colName,
+                    ];
+                }
             }
         }
         return $diff;

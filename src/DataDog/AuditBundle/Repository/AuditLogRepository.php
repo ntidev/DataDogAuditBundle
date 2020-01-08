@@ -29,7 +29,7 @@ class AuditLogRepository extends \Doctrine\ORM\EntityRepository
         $options = array(
             "draw" => isset($options["draw"]) ? $options["draw"] : 1,
             "search" => isset($options["search"]) ? $options["search"] : "",
-            "sortBy" => isset($options["sortBy"]) ? $options["sortBy"] : "a.loggedAt",
+            "sortBy" => isset($options["sortBy"]) ? $options["sortBy"] : "id",
             "orderBy" => (isset($options["orderBy"]) && in_array(strtolower($options["orderBy"]), array("desc", "asc"))) ? $options["orderBy"] : "asc",
             "start" => (isset($options["start"]) && $options["start"] >= 0) ? $options["start"] : 0,
             "limit" => (isset($options["limit"]) && $options["limit"] < self::MAX_RESULTS) ? $options["limit"] : ( (isset($options["length"]) && $options["length"] < self::MAX_RESULTS) ? $options["length"] : self::MAX_RESULTS ),
@@ -124,7 +124,7 @@ class AuditLogRepository extends \Doctrine\ORM\EntityRepository
         // Manage SortBy
         if(is_array($options["sortBy"])) {
             foreach($options["sortBy"] as $sort) {
-                $qb->addOrderBy($sort, $options["orderBy"]);
+                $qb->addOrderBy($sort, "a.".$options["orderBy"]);
             }
         } else {
             $qb->orderBy($options["sortBy"], $options["orderBy"]);

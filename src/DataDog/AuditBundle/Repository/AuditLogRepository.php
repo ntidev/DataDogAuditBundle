@@ -41,19 +41,6 @@ class AuditLogRepository extends \Doctrine\ORM\EntityRepository
 
         $qb = $this->createQueryBuilder('a')
             ->join('DataDog\AuditBundle\Entity\Association', 'aa', 'WITH', 'aa = a.source');
-
-        // Totals Count
-        $totalLogsQb = clone $qb;
-        $totalLogsQb->select('COUNT(a.id)');
-        $totalCountQuery = $totalLogsQb->getQuery();
-
-        try {
-            $totalLogsCount = $totalCountQuery->getSingleScalarResult();
-        } catch (NoResultException $e) {
-            $totalLogsCount = 0;
-        } catch (NonUniqueResultException $e) {
-            $totalLogsCount = 0;
-        }
         
         // Apply filters
         foreach($options["filters"] as $field => $search) {
@@ -130,18 +117,6 @@ class AuditLogRepository extends \Doctrine\ORM\EntityRepository
             $qb->orderBy($options["sortBy"], $options["orderBy"]);
         }
 
-        $countQb = clone $qb;
-        $countQb->select('COUNT(a.id)');
-        $countQuery = $countQb->getQuery();
-
-        try {
-            $logsCount = $countQuery->getSingleScalarResult();
-        } catch (NoResultException $e) {
-            $logsCount = 0;
-        } catch (NonUniqueResultException $e) {
-            $logsCount = 0;
-        }
-
         $resultQuery = $qb->getQuery();
         if(isset($options["_paginate"]) && $options["_paginate"] == true) {
             if(null !== $options["limit"])
@@ -154,12 +129,7 @@ class AuditLogRepository extends \Doctrine\ORM\EntityRepository
 
         return array(
             "draw" => intval( $options["draw"] ),
-            "recordsTotal" => $totalLogsCount,
-            "recordsFiltered" => $logsCount,
             'data' => $logs,
-            "pagination" => array(
-                "more" => $logsCount > ($options["start"] + $options["limit"]),
-            )
         );
 
     }

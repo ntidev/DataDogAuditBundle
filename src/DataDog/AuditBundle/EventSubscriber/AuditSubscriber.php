@@ -7,7 +7,7 @@ use DataDog\AuditBundle\Entity\AuditLog;
 use DataDog\AuditBundle\Entity\Association;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Logging\LoggerChain;
@@ -28,7 +28,7 @@ class AuditSubscriber implements EventSubscriber
     protected $old;
 
     /**
-     * @var TokenStorage
+     * @var TokenStorageInterface
      */
     protected $securityTokenStorage;
 
@@ -49,7 +49,7 @@ class AuditSubscriber implements EventSubscriber
     /** @var UserInterface */
     protected $blameUser;
 
-    public function __construct(TokenStorage $securityTokenStorage, ContainerInterface $container)
+    public function __construct(TokenStorageInterface $securityTokenStorage, ContainerInterface $container)
     {
         $this->container = $container;
         $this->securityTokenStorage = $securityTokenStorage;

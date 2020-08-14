@@ -27,3 +27,7 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.controller }
 
+  DataDog\AuditBundle\Command\:
+        resource: '../../Command/*'
+        tags: ['console.command']
+

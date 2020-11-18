@@ -468,7 +468,7 @@ class AuditSubscriber implements EventSubscriber
         }
 
         $meta = get_class($association);
-        $res = ['class' => $meta, 'typ' => $this->typ($meta), 'tbl' => null, 'label' => null];
+        $res = ['class' => $meta, 'typ' => $this->typ($meta), 'tbl' => null, 'label' => null, 'createdOn' => new \DateTime()];
 
         try {
             $meta = $em->getClassMetadata($meta);
@@ -476,7 +476,6 @@ class AuditSubscriber implements EventSubscriber
             $em->getUnitOfWork()->initializeObject($association); // ensure that proxies are initialized
             $res['fk'] = $this->getUser() != null && $diff == false ? $this->getUser()->getId() : (string)$this->id($em, $association);
             $res['label'] = $this->label($em, $association, $diff);
-            $res['createdOn'] = new \DateTime();
         } catch (\Exception $e) {
             $res['fk'] = (string) $association->getId();
         }

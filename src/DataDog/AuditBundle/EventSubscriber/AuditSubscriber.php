@@ -123,6 +123,11 @@ class AuditSubscriber implements EventSubscriber
     public function onFlush(OnFlushEventArgs $args)
     {
         $em = $args->getEntityManager();
+
+        // Entity Manager for logging -
+        $connectionName = $this->container->getParameter('nti_audit.database.connection_name');
+        $em = $this->container->get('doctrine')->getManager($connectionName);
+
         $uow = $em->getUnitOfWork();
 
         // extend the sql logger
@@ -195,6 +200,10 @@ class AuditSubscriber implements EventSubscriber
 
     protected function flush(EntityManager $em)
     {
+        // Entity Manager for logging -
+        $connectionName = $this->container->getParameter('nti_audit.database.connection_name');
+        $em = $this->container->get('doctrine')->getManager($connectionName);
+
         $em->getConnection()->getConfiguration()->setSQLLogger($this->old);
         $uow = $em->getUnitOfWork();
 

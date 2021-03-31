@@ -38,7 +38,8 @@ class DeleteAuditCommand extends ContainerAwareCommand
         $dateModify->setTime(0,0,0);
 
         // Delete
-        $em = $this->getContainer()->get('doctrine')->getManager();
+        $connectionName = $this->container->getParameter('nti_audit.database.connection_name');
+        $em = $this->getContainer()->get('doctrine')->getManager($connectionName);
 
         $associations = $em->getRepository(Association::class)->findAudit($dateModify, $date);
     

@@ -31,9 +31,9 @@ class AuditLogService {
      * @return mixed
      */
     public function getAll($options = array()) {
-        $em = $this->container->get('doctrine')->getManager();
+        $connectionName = $this->container->getParameter('nti_audit.database.connection_name');
+        $em = $this->container->get('doctrine')->getManager($connectionName);
         $logs = $em->getRepository(AuditLog::class)->findByOptions($options);
         return $logs;
     }
-
 }

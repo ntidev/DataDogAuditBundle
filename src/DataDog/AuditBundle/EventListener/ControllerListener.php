@@ -61,7 +61,8 @@ class ControllerListener
             return;
         }
 
-        $em = $this->container->get('doctrine')->getManager();
+        $connectionName = $this->container->getParameter('nti_audit.database.connection_name');
+        $em = $this->container->get('doctrine')->getManager($connectionName);
 
         // User Loggued
         $user = '';

@@ -16,6 +16,7 @@
     <field name="fk" />
     <field name="class" />
     <field name="createdOn" type="datetime" />
+    <field name="appName" nullable="true" />
 
   </entity>
 

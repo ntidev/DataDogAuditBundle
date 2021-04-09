@@ -48,6 +48,35 @@ class Association
      */
     private $createdOn;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="app_name", type="text", nullable=true)
+     */
+    private $appName;
+    
+    /**
+     * Get app name
+     *
+     * @return string
+     */
+    public function getAppName()
+    {
+        return $this->appName;
+    }
+    
+    /**
+     * Set app name
+     *appName
+     * @param string $app_name
+     * @return Log
+     */
+    public function setAppName($appname)
+    {
+        $this->appName = $appname;
+        return $this;
+    }   
+
     public function getId()
     {
         return $this->id;

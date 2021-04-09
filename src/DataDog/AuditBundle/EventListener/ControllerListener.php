@@ -61,6 +61,7 @@ class ControllerListener
             return;
         }
 
+        // Get custom connection for logging
         $connectionName = $this->container->getParameter('nti_audit.database.connection_name');
         $em = $this->container->get('doctrine')->getManager($connectionName);
 
@@ -102,6 +103,8 @@ class ControllerListener
         // Filter sensitive data
         foreach ($this->unauditedRequestFieldsPath as $unauditedPath)
             $data = $this->removeJsonField($unauditedPath, $data);
+
+        $app_name = $this->container->getParameter('app_short_name');
         
         // Set Object
         $audit = new AuditRequest();
@@ -114,6 +117,7 @@ class ControllerListener
         $audit->setPortal($portal);
         $audit->setQueryData($queryData);
         $audit->setData($data);
+        $audit->setAppName($app_name);
         $audit->setCreatedOn(new \DateTime());
 
         $em->persist($audit);
@@ -121,7 +125,9 @@ class ControllerListener
         try{
             $em->flush();
         }catch (\Exception $ex){
-
+            $fp = fopen('errors.txt', 'w');
+            fwrite($fp, $ex);
+            fclose($fp);
         }
     }
 

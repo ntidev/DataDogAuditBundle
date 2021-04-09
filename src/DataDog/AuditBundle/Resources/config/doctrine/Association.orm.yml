@@ -22,3 +22,5 @@ DataDog\AuditBundle\Entity\Association:
       type: string
     createdOn:
       type: datetime
+    appName:
+      type: string       

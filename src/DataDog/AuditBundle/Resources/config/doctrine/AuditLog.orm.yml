@@ -28,3 +28,5 @@ DataDog\AuditBundle\Entity\AuditLog:
       nullable: true
     loggedAt:
       type: datetime
+    appName:
+      type: string       

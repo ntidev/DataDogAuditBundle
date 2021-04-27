@@ -104,7 +104,7 @@ class ControllerListener
         foreach ($this->unauditedRequestFieldsPath as $unauditedPath)
             $data = $this->removeJsonField($unauditedPath, $data);
 
-        $app_name = $this->container->getParameter('app_short_name');
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
         
         // Set Object
         $audit = new AuditRequest();

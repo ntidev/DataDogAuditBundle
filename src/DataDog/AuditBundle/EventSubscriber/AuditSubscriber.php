@@ -253,7 +253,7 @@ class AuditSubscriber implements EventSubscriber
 
     protected function associate(EntityManager $em, $source, $target, array $mapping)
     {
-        $app_name = $this->container->getParameter('app_short_name');
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
         $this->audit($em, [
             'source' => $this->assoc($em, $source),
             'target' => $this->assoc($em, $target),
@@ -267,7 +267,7 @@ class AuditSubscriber implements EventSubscriber
 
     protected function dissociate(EntityManager $em, $source, $target, $id, array $mapping)
     {
-        $app_name = $this->container->getParameter('app_short_name');
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
 
         $this->audit($em, [
             'source' => $this->assoc($em, $source),
@@ -282,7 +282,7 @@ class AuditSubscriber implements EventSubscriber
 
     protected function insert(EntityManager $em, $entity, array $ch)
     {
-        $app_name = $this->container->getParameter('app_short_name');
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
         $diff = $this->diff($em, $entity, $ch);
         if (empty($diff)) {
             return; // if there is no entity diff, do not log it
@@ -301,7 +301,7 @@ class AuditSubscriber implements EventSubscriber
 
     protected function update(EntityManager $em, $entity, array $ch)
     {
-        $app_name = $this->container->getParameter('app_short_name');
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
         $diff = $this->diff($em, $entity, $ch);
         if (empty($diff)) {
             return; // if there is no entity diff, do not log it
@@ -320,7 +320,7 @@ class AuditSubscriber implements EventSubscriber
 
     protected function remove(EntityManager $em, $entity, $id)
     {
-        $app_name = $this->container->getParameter('app_short_name');
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
         $meta = $em->getClassMetadata(get_class($entity));
         $source = array_merge($this->assoc($em, $entity), ['fk' => $id]);
 
@@ -345,7 +345,7 @@ class AuditSubscriber implements EventSubscriber
         $p = $c->getDatabasePlatform();
         $q = $em->getConfiguration()->getQuoteStrategy();
 
-        $app_name = $this->container->getParameter('app_short_name');
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
         $data['appName'] = $app_name;
 
         foreach (['source', 'target', 'blame'] as $field) {
@@ -497,7 +497,7 @@ class AuditSubscriber implements EventSubscriber
         }
 
         $meta = get_class($association);
-        $app_name = $this->container->getParameter('app_short_name');
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
         $res = ['class' => $meta, 'typ' => $this->typ($meta), 'tbl' => null, 'label' => null, 'createdOn' => new \DateTime(), 'appName' => $app_name];
 
         try {

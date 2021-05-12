@@ -344,52 +344,55 @@ class AuditSubscriber implements EventSubscriber
         $c = $em->getConnection();
         $p = $c->getDatabasePlatform();
         $q = $em->getConfiguration()->getQuoteStrategy();
+        try {
+            $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
+            $data['appName'] = $app_name;
 
-        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
-        $data['appName'] = $app_name;
+            foreach (['source', 'target', 'blame'] as $field) {
+                if (null === $data[$field]) {
+                    continue;
+                }
+                $meta = $logginem->getClassMetadata(Association::class);
+                $idx = 1;
 
-        foreach (['source', 'target', 'blame'] as $field) {
-            if (null === $data[$field]) {
-                continue;
+                foreach ($meta->reflFields as $name => $f) {
+                    if ($meta->isIdentifier($name)) {
+                        continue;
+                    }
+                    $typ = $meta->fieldMappings[$name]['type'];
+                    $this->assocInsertStmt->bindValue($idx++, $data[$field][$name], $typ);
+                }
+
+                // dd($this->assocInsertStmt);
+                $this->assocInsertStmt->execute();
+                // use id generator, it will always use identity strategy, since our
+                // audit association explicitly sets that.
+                $data[$field] = $meta->idGenerator->generate($logginem, null);
             }
-            $meta = $logginem->getClassMetadata(Association::class);
-            $idx = 1;
 
+            $meta = $logginem->getClassMetadata(AuditLog::class);
+            $data['loggedAt'] = new \DateTime();
+
+            $idx = 1;
             foreach ($meta->reflFields as $name => $f) {
                 if ($meta->isIdentifier($name)) {
                     continue;
                 }
-                $typ = $meta->fieldMappings[$name]['type'];
-                $this->assocInsertStmt->bindValue($idx++, $data[$field][$name], $typ);
+                if (isset($meta->fieldMappings[$name]['type'])) {
+                    $typ = $meta->fieldMappings[$name]['type'];
+                } else {
+                    $typ = Type::getType(Type::BIGINT); // relation
+                }
+                // @TODO: this check may not be necessary, simply it ensures that empty values are nulled
+                if (in_array($name, ['source', 'target', 'blame']) && $data[$name] === false) {
+                    $data[$name] = null;
+                }
+                $this->auditInsertStmt->bindValue($idx++, $data[$name], $typ);
             }
-
-            // dd($this->assocInsertStmt);
-            $this->assocInsertStmt->execute();
-            // use id generator, it will always use identity strategy, since our
-            // audit association explicitly sets that.
-            $data[$field] = $meta->idGenerator->generate($logginem, null);
+            $this->auditInsertStmt->execute();
+        } catch(\Exception $ex) {
+            
         }
-
-        $meta = $logginem->getClassMetadata(AuditLog::class);
-        $data['loggedAt'] = new \DateTime();
-
-        $idx = 1;
-        foreach ($meta->reflFields as $name => $f) {
-            if ($meta->isIdentifier($name)) {
-                continue;
-            }
-            if (isset($meta->fieldMappings[$name]['type'])) {
-                $typ = $meta->fieldMappings[$name]['type'];
-            } else {
-                $typ = Type::getType(Type::BIGINT); // relation
-            }
-            // @TODO: this check may not be necessary, simply it ensures that empty values are nulled
-            if (in_array($name, ['source', 'target', 'blame']) && $data[$name] === false) {
-                $data[$name] = null;
-            }
-            $this->auditInsertStmt->bindValue($idx++, $data[$name], $typ);
-        }
-        $this->auditInsertStmt->execute();
     }
 
     protected function id(EntityManager $em, $entity)

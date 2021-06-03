@@ -124,11 +124,7 @@ class ControllerListener
 
         try{
             $em->flush();
-        }catch (\Exception $ex){
-            $fp = fopen('errors.txt', 'w');
-            fwrite($fp, $ex);
-            fclose($fp);
-        }
+        }catch (\Exception $ex){ }
     }
 
     public function removeJsonField($path, $data) {

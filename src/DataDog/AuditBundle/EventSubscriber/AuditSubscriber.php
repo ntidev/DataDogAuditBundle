@@ -136,11 +136,8 @@ class AuditSubscriber implements EventSubscriber
             $loggers[] = $this->old;
         }
 
-<<<<<<< HEAD
         $new = new LoggerChain($loggers);
 
-=======
->>>>>>> v2.0.2
         $em->getConnection()->getConfiguration()->setSQLLogger($new);
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
@@ -379,21 +376,6 @@ class AuditSubscriber implements EventSubscriber
             $meta = $logginem->getClassMetadata(AuditLog::class);
             $data['loggedAt'] = new \DateTime();
 
-<<<<<<< HEAD
-        $idx = 1;
-        foreach ($meta->reflFields as $name => $f) {
-            if ($meta->isIdentifier($name)) {
-                continue;
-            }
-            if (isset($meta->fieldMappings[$name]['type'])) {
-                $typ = $meta->fieldMappings[$name]['type'];
-            } else {
-                $typ = Type::getType(Types::BIGINT); // relation
-            }
-            // @TODO: this check may not be necessary, simply it ensures that empty values are nulled
-            if (in_array($name, ['source', 'target', 'blame']) && $data[$name] === false) {
-                $data[$name] = null;
-=======
             $idx = 1;
             foreach ($meta->reflFields as $name => $f) {
                 if ($meta->isIdentifier($name)) {
@@ -402,14 +384,13 @@ class AuditSubscriber implements EventSubscriber
                 if (isset($meta->fieldMappings[$name]['type'])) {
                     $typ = $meta->fieldMappings[$name]['type'];
                 } else {
-                    $typ = Type::getType(Type::BIGINT); // relation
+                    $typ = Type::getType(Types::BIGINT); // relation
                 }
                 // @TODO: this check may not be necessary, simply it ensures that empty values are nulled
                 if (in_array($name, ['source', 'target', 'blame']) && $data[$name] === false) {
                     $data[$name] = null;
                 }
                 $this->auditInsertStmt->bindValue($idx++, $data[$name], $typ);
->>>>>>> v2.0.2
             }
             $this->auditInsertStmt->execute();
         } catch(\Exception $ex) {

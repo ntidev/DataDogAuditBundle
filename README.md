@@ -57,6 +57,18 @@ Enable the audit request in the project:
         audit_request:
             enabled: true
 
+If you will use a custom database connection use following config:
+
+    // app/config.yml
+    # DataDog
+    data_dog_audit:
+        database:
+            connection_name: nti_logs    
+        audit_request:
+            enabled: true
+
+See [How to Work with multiple Entity Managers and Connections](https://symfony.com/doc/3.4/doctrine/multiple_entity_managers.html "https://symfony.com/doc/3.4/doctrine/multiple_entity_managers.html")
+
 ### Annotations
 
 Annotations has to use in the controller, add Annotations NTIAudit in the class:

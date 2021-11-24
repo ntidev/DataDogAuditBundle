@@ -14,13 +14,13 @@
     <field name="tbl" length="128" />
     <field name="diff" type="json_array" nullable="true" />
     <field name="loggedAt" type="datetime" />
+    <field name="appName" type="text" nullable="true" />
 
     <one-to-one field="source" target-entity="Association">
       <join-column nullable="false" />
     </one-to-one>
     <one-to-one field="target" target-entity="Association" />
     <one-to-one field="blame" target-entity="Association" />
-
   </entity>
 
 </doctrine-mapping>

@@ -91,6 +91,13 @@ class AuditRequest
     private $createdOn;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="app_name", type="text", nullable=true)
+     */
+    private $appName;
+
+    /**
      * Get id.
      *
      * @return int
@@ -332,4 +339,26 @@ class AuditRequest
         $this->createdOn = $dateTime;
         return $this;
     }
+
+    /**
+     * Get app name
+     *
+     * @return string
+     */
+    public function getAppName()
+    {
+        return $this->appName;
+    }
+    
+    /**
+     * Set app name
+     *appName
+     * @param string $app_name
+     * @return Log
+     */
+    public function setAppName($appname)
+    {
+        $this->appName = $appname;
+        return $this;
+    }       
 }

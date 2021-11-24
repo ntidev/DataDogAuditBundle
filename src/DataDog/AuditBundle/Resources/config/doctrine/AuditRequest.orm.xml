@@ -20,6 +20,7 @@
     <field name="queryData" type="text" nullable="true" />
     <field name="data" type="text" nullable="true" />
     <field name="createdOn" type="datetime"  nullable="true" />
+    <field name="appName" type="text" nullable="true" />
   </entity>
 
 </doctrine-mapping>

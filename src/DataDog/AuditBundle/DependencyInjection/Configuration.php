@@ -26,6 +26,15 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
+                ->arrayNode('database')
+                    ->children()
+                        ->scalarNode("connection_name")->end()
+                ->end()
+            ->end()
+        ;
+
+        $rootNode
+            ->children()
                 ->arrayNode('audited_entities')
                     ->canBeUnset()
                     ->performNoDeepMerging()

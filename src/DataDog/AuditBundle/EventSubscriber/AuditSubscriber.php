@@ -136,8 +136,11 @@ class AuditSubscriber implements EventSubscriber
             $loggers[] = $this->old;
         }
 
+<<<<<<< HEAD
         $new = new LoggerChain($loggers);
 
+=======
+>>>>>>> v2.0.2
         $em->getConnection()->getConfiguration()->setSQLLogger($new);
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
@@ -200,18 +203,25 @@ class AuditSubscriber implements EventSubscriber
     protected function flush(EntityManager $em)
     {
         $em->getConnection()->getConfiguration()->setSQLLogger($this->old);
+
+        // Entity Manager for logging -
+        $connectionName = $this->container->getParameter('nti_audit.database.connection_name');
+        $logginem = $this->container->get('doctrine')->getManager($connectionName);
+        $luow = $logginem->getUnitOfWork();
+
         $uow = $em->getUnitOfWork();
 
-        $auditPersister = $uow->getEntityPersister(AuditLog::class);
+        $auditPersister = $luow->getEntityPersister(AuditLog::class);
         $rmAuditInsertSQL = new \ReflectionMethod($auditPersister, 'getInsertSQL');
         $rmAuditInsertSQL->setAccessible(true);
-        $this->auditInsertStmt = $em->getConnection()->prepare($rmAuditInsertSQL->invoke($auditPersister));
-        $assocPersister = $uow->getEntityPersister(Association::class);
+        $this->auditInsertStmt = $logginem->getConnection()->prepare($rmAuditInsertSQL->invoke($auditPersister));
+        $assocPersister = $luow->getEntityPersister(Association::class);
         $rmAssocInsertSQL = new \ReflectionMethod($assocPersister, 'getInsertSQL');
         $rmAssocInsertSQL->setAccessible(true);
-        $this->assocInsertStmt = $em->getConnection()->prepare($rmAssocInsertSQL->invoke($assocPersister));
+        $this->assocInsertStmt = $logginem->getConnection()->prepare($rmAssocInsertSQL->invoke($assocPersister));
 
         foreach ($this->updated as $entry) {
+            
             list($entity, $ch) = $entry;
             // the changeset might be updated from UOW extra updates
             $ch = array_merge($ch, $uow->getEntityChangeSet($entity));
@@ -249,6 +259,7 @@ class AuditSubscriber implements EventSubscriber
 
     protected function associate(EntityManager $em, $source, $target, array $mapping)
     {
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
         $this->audit($em, [
             'source' => $this->assoc($em, $source),
             'target' => $this->assoc($em, $target),
@@ -256,11 +267,14 @@ class AuditSubscriber implements EventSubscriber
             'blame' => $this->blame($em),
             'diff' => null,
             'tbl' => $mapping['joinTable']['name'],
+            'appName' => $app_name
         ]);
     }
 
     protected function dissociate(EntityManager $em, $source, $target, $id, array $mapping)
     {
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
+
         $this->audit($em, [
             'source' => $this->assoc($em, $source),
             'target' => array_merge($this->assoc($em, $target), ['fk' => $id]),
@@ -268,11 +282,13 @@ class AuditSubscriber implements EventSubscriber
             'blame' => $this->blame($em),
             'diff' => null,
             'tbl' => $mapping['joinTable']['name'],
+            'appName' => $app_name
         ]);
     }
 
     protected function insert(EntityManager $em, $entity, array $ch)
     {
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
         $diff = $this->diff($em, $entity, $ch);
         if (empty($diff)) {
             return; // if there is no entity diff, do not log it
@@ -285,11 +301,13 @@ class AuditSubscriber implements EventSubscriber
             'blame' => $this->blame($em),
             'diff' => $diff,
             'tbl' => $meta->table['name'],
+            'appName' => $app_name
         ]);
     }
 
     protected function update(EntityManager $em, $entity, array $ch)
     {
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
         $diff = $this->diff($em, $entity, $ch);
         if (empty($diff)) {
             return; // if there is no entity diff, do not log it
@@ -302,13 +320,16 @@ class AuditSubscriber implements EventSubscriber
             'blame' => $this->blame($em),
             'diff' => $diff,
             'tbl' => $meta->table['name'],
+            'appName' => $app_name
         ]);
     }
 
     protected function remove(EntityManager $em, $entity, $id)
     {
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
         $meta = $em->getClassMetadata(get_class($entity));
         $source = array_merge($this->assoc($em, $entity), ['fk' => $id]);
+
         $this->audit($em, [
             'action' => 'remove',
             'source' => $source,
@@ -316,38 +337,49 @@ class AuditSubscriber implements EventSubscriber
             'blame' => $this->blame($em),
             'diff' => null,
             'tbl' => $meta->table['name'],
+            'appName' => $app_name
         ]);
     }
 
     protected function audit(EntityManager $em, array $data)
     {
+        // $logginem entity manager for logging. $em is the principal / default Entity Manager.
+        $connectionName = $this->container->getParameter('nti_audit.database.connection_name');
+        $logginem = $this->container->get('doctrine')->getManager($connectionName);
+
         $c = $em->getConnection();
         $p = $c->getDatabasePlatform();
         $q = $em->getConfiguration()->getQuoteStrategy();
+        try {
+            $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
+            $data['appName'] = $app_name;
 
-        foreach (['source', 'target', 'blame'] as $field) {
-            if (null === $data[$field]) {
-                continue;
-            }
-            $meta = $em->getClassMetadata(Association::class);
-            $idx = 1;
-            foreach ($meta->reflFields as $name => $f) {
-                if ($meta->isIdentifier($name)) {
+            foreach (['source', 'target', 'blame'] as $field) {
+                if (null === $data[$field]) {
                     continue;
                 }
-                $typ = $meta->fieldMappings[$name]['type'];
+                $meta = $logginem->getClassMetadata(Association::class);
+                $idx = 1;
 
-                $this->assocInsertStmt->bindValue($idx++, $data[$field][$name], $typ);
+                foreach ($meta->reflFields as $name => $f) {
+                    if ($meta->isIdentifier($name)) {
+                        continue;
+                    }
+                    $typ = $meta->fieldMappings[$name]['type'];
+                    $this->assocInsertStmt->bindValue($idx++, $data[$field][$name], $typ);
+                }
+
+                // dd($this->assocInsertStmt);
+                $this->assocInsertStmt->execute();
+                // use id generator, it will always use identity strategy, since our
+                // audit association explicitly sets that.
+                $data[$field] = $meta->idGenerator->generate($logginem, null);
             }
-            $this->assocInsertStmt->execute();
-            // use id generator, it will always use identity strategy, since our
-            // audit association explicitly sets that.
-            $data[$field] = $meta->idGenerator->generate($em, null);
-        }
 
-        $meta = $em->getClassMetadata(AuditLog::class);
-        $data['loggedAt'] = new \DateTime();
+            $meta = $logginem->getClassMetadata(AuditLog::class);
+            $data['loggedAt'] = new \DateTime();
 
+<<<<<<< HEAD
         $idx = 1;
         foreach ($meta->reflFields as $name => $f) {
             if ($meta->isIdentifier($name)) {
@@ -361,10 +393,28 @@ class AuditSubscriber implements EventSubscriber
             // @TODO: this check may not be necessary, simply it ensures that empty values are nulled
             if (in_array($name, ['source', 'target', 'blame']) && $data[$name] === false) {
                 $data[$name] = null;
+=======
+            $idx = 1;
+            foreach ($meta->reflFields as $name => $f) {
+                if ($meta->isIdentifier($name)) {
+                    continue;
+                }
+                if (isset($meta->fieldMappings[$name]['type'])) {
+                    $typ = $meta->fieldMappings[$name]['type'];
+                } else {
+                    $typ = Type::getType(Type::BIGINT); // relation
+                }
+                // @TODO: this check may not be necessary, simply it ensures that empty values are nulled
+                if (in_array($name, ['source', 'target', 'blame']) && $data[$name] === false) {
+                    $data[$name] = null;
+                }
+                $this->auditInsertStmt->bindValue($idx++, $data[$name], $typ);
+>>>>>>> v2.0.2
             }
-            $this->auditInsertStmt->bindValue($idx++, $data[$name], $typ);
+            $this->auditInsertStmt->execute();
+        } catch(\Exception $ex) {
+            
         }
-        $this->auditInsertStmt->execute();
     }
 
     protected function id(EntityManager $em, $entity)
@@ -472,7 +522,8 @@ class AuditSubscriber implements EventSubscriber
         }
 
         $meta = get_class($association);
-        $res = ['class' => $meta, 'typ' => $this->typ($meta), 'tbl' => null, 'label' => null];
+        $app_name = $this->container->hasParameter("app_short_name") ? $this->container->getParameter('app_short_name') : $_SERVER["app_short_name"];
+        $res = ['class' => $meta, 'typ' => $this->typ($meta), 'tbl' => null, 'label' => null, 'createdOn' => new \DateTime(), 'appName' => $app_name];
 
         try {
             $meta = $em->getClassMetadata($meta);

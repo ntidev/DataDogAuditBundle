@@ -35,3 +35,5 @@ DataDog\AuditBundle\Entity\AuditRequest:
       type: text
     createdOn:
       type: datetime
+    appName:
+      type: string      

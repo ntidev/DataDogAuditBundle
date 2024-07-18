@@ -5,14 +5,23 @@ namespace DataDog\AuditBundle\Command;
 use DataDog\AuditBundle\Entity\Association;
 use DataDog\AuditBundle\Entity\AuditLog;
 use DataDog\AuditBundle\Entity\AuditRequest;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class DeleteAuditCommand extends ContainerAwareCommand
+class DeleteAuditCommand extends Command
 {
+    private $container;
+    
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+        parent::__construct();
+    }
+    
     protected function configure()
     {
         $this
@@ -39,7 +48,7 @@ class DeleteAuditCommand extends ContainerAwareCommand
 
         // Delete
         $connectionName = $this->container->getParameter('nti_audit.database.connection_name');
-        $em = $this->getContainer()->get('doctrine')->getManager($connectionName);
+        $em = $this->container->get('doctrine')->getManager($connectionName);
 
         $associations = $em->getRepository(Association::class)->findAudit($dateModify, $date);
     

@@ -2,14 +2,12 @@
 
 namespace DataDog\AuditBundle\EventListener;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use ReflectionObject;
 use DataDog\AuditBundle\Entity\AuditRequest;
-use DataDog\AuditBundle\DBAL\AuditLogger;
-use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use DataDog\AuditBundle\Annotations\NTIAudit;
+use Doctrine\ORM\Mapping\Driver\AttributeReader;
 use Exception;
+use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class ControllerListener
 {
@@ -27,7 +25,7 @@ class ControllerListener
         $this->unauditedRequestFieldsPath = $unauditedRequestFields;
     }
 
-    public function onKernelController(FilterControllerEvent $event){
+    public function onKernelController(ControllerEvent $event){
 
         if(!$this->container->getParameter('nti_audit.audit_request.enabled')){
             return;
@@ -43,12 +41,12 @@ class ControllerListener
         $reflectionClass = new \ReflectionClass($controller);
 
         // Controller
-        $reader = new \Doctrine\Common\Annotations\AnnotationReader();
-        $classAnnotation = $reader->getClassAnnotation($reflectionClass, NTIAudit::class);
+        $reader = new AttributeReader();
+        $classAnnotation = $reader->getClassAttributes($reflectionClass, NTIAudit::class);
 
         // Method
         $reflectionMethod = $reflectionClass->getMethod($methodName);
-        $methodAnnotation = $reader->getMethodAnnotation($reflectionMethod, NTIAudit::class);
+        $methodAnnotation = $reader->getMethodAttributes($reflectionMethod, NTIAudit::class);
 
         if(!($classAnnotation || $methodAnnotation)){
             return;

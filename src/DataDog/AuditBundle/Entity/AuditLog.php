@@ -5,60 +5,74 @@ namespace DataDog\AuditBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity
- * @ORM\Entity(repositoryClass="DataDog\AuditBundle\Repository\AuditLogRepository")
- * @ORM\Table(name="audit_logs")
+ * 
+ * AuditLog
+ * 
  */
+#[ORM\Table(name: 'audit_logs')]
+#[ORM\Entity(repositoryClass: 'DataDog\AuditBundle\Repository\AuditLogRepository')]
+#[ORM\HasLifecycleCallbacks()]
 class AuditLog
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="bigint")
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * 
+     * @var bigint
+     * 
      */
+    #[ORM\Column(name: 'id', type: 'bigint')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
-     * @ORM\Column(length=12)
+     * 
      */
+    #[ORM\Column(length: 12)]
     private $action;
 
     /**
-     * @ORM\Column(length=128)
+     * 
      */
+    #[ORM\Column(length: 12)]
     private $tbl;
 
     /**
-     * @ORM\OneToOne(targetEntity="Association")
-     * @ORM\JoinColumn(nullable=false)
+     * 
+     * 
      */
+    #[ORM\OneToOne(targetEntity: Association::class)]
+    #[ORM\JoinColumn(nullable:false)]
     private $source;
 
     /**
-     * @ORM\OneToOne(targetEntity="Association")
+     * 
      */
+    #[ORM\OneToOne(targetEntity: Association::class)]
     private $target;
 
     /**
-     * @ORM\OneToOne(targetEntity="Association")
+     * 
      */
+    #[ORM\OneToOne(targetEntity: Association::class)]
     private $blame;
 
     /**
-     * @ORM\Column(type="json_array", nullable=true)
+     * 
      */
+    #[ORM\Column(type:'json_array', nullable:true)]
     private $diff;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @var datetime
      */
+    #[ORM\Column(type:'datetime')]
     private $loggedAt;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="app_name", type="text", nullable=true)
+     * 
      */
+    #[ORM\Column(name:'app_name', type:'text', nullable:true)]
     private $appName;    
 
     /**

@@ -25,7 +25,7 @@ class DataDogAuditExtension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
-        $auditSubscriber = $container->getDefinition('datadog.event_subscriber.audit');
+        $auditSubscriber = $container->getDefinition('datadog.event_listener.audit');
 
         if (isset($config['audited_entities']) && !empty($config['audited_entities']))
             $auditSubscriber->addMethodCall('addAuditedEntities', array($config['audited_entities']));

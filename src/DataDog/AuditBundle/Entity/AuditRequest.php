@@ -5,54 +5,54 @@ namespace DataDog\AuditBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="audit_request")
- * @ORM\Entity(repositoryClass="DataDog\AuditBundle\Repository\AuditRequestRepository")
- * @ORM\HasLifecycleCallbacks()
+ * 
+ * AuditResquest
+ * 
  */
+#[ORM\Table(name: 'audit_request')]
+#[ORM\Entity(repositoryClass: 'DataDog\AuditBundle\Repository\AuditLogRepository')]
+#[ORM\HasLifecycleCallbacks()]
 class AuditRequest
 {
     /**
-     * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
+     * @var integer
+     * 
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="method", type="string", length=255, nullable=true)
+     * 
      */
+    #[ORM\Column(name:"method", type:"string", length:255, nullable:true)]
     private $method;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="controller", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name:"controller", type:"string", length:255, nullable:true)]
     private $controller;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="route", type="string", length=1000, nullable=true)
      */
+    #[ORM\Column(name:"route", type:"string", length:1000, nullable:true)]
     private $route;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="route_params", type="text", nullable=true)
      */
+    #[ORM\Column(name:"route_params", type:"text", nullable:true)]
     private $routeParams;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="ip", type="string", length=255, nullable=true)
+     * 
      */
+    #[ORM\Column(name:"ip", type:"string", length:255, nullable:true)]
     private $ip;
 
     /**
@@ -60,41 +60,37 @@ class AuditRequest
      *
      * @ORM\Column(name="user_name", type="string", length=500, nullable=true)
      */
+    #[ORM\Column(name:"ip", type:"string", length:255, nullable:true)]
     private $userName;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="portal", type="string", length=500, nullable=true)
      */
+    #[ORM\Column(name:"portal", type:"string", length:500, nullable:true)]
     private $portal;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="query_data", type="text", nullable=true)
      */
+    #[ORM\Column(name:"query_data", type:"text", nullable:true)]
     private $queryData;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="data", type="text", nullable=true)
      */
+    #[ORM\Column(name:"data", type:"text", nullable:true)]
     private $data;
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="created_on", type="datetime", nullable=false)
      */
+    #[ORM\Column(name:"created_on", type:"datetime", nullable:false)]
     private $createdOn;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="app_name", type="text", nullable=true)
      */
+    #[ORM\Column(name:"app_name", type:"text", nullable:true)]
     private $appName;
 
     /**

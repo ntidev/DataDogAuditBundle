@@ -3,10 +3,17 @@
 namespace DataDog\AuditBundle\Repository;
 
 use DataDog\AuditBundle\Entity\AuditLog;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 
-class AuditLogRepository extends \Doctrine\ORM\EntityRepository
+class AuditLogRepository extends ServiceEntityRepository
 {
     const MAX_RESULTS = 1000;
+
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, AuditLog::class);
+    }
 
     public function findAudit(\DateTime $dateStart, \DateTime $dateEnd){
         $qb = $this->createQueryBuilder('a');

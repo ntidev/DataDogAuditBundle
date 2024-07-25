@@ -8,22 +8,17 @@ services:
     resource: '../../../../../src/DataDog/*'
     # you can exclude directories or files
     # but if a service is unused, it's removed anyway
-    exclude: '../../../../../src/DataDog/AuditBundle/{Entity,Repository,Service}'
-
-  # actual services to be tagged as public
-  DataDog\AuditBundle\Service\:
-    resource: '../../../../../src/DataDog/AuditBundle/Service'
-    public: true
-
-  datadog.event_subscriber.audit:
-    class: DataDog\AuditBundle\EventSubscriber\AuditSubscriber
-    arguments: ["@security.token_storage"]
-    tags:
-      - { name: doctrine.event_subscriber, connection: default }
+    # exclude: '../../../../../src/DataDog/AuditBundle/{Entity,Repository,Service}'
 
   datadog.event_listener.audit:
+    class: DataDog\AuditBundle\EventListener\AuditListener
+    arguments: ["@security.token_storage", "@service_container", "@doctrine.orm.entity_manager"]
+    tags:
+      - { name: doctrine.event_listener, event: flush }
+
+  datadog.event_listener.audit_controller:
     class: DataDog\AuditBundle\EventListener\ControllerListener
-    arguments: ['@service_container']
+    arguments: ['@service_container', "@doctrine.orm.entity_manager", "@security.token_storage"]
     tags:
       - { name: kernel.event_listener, event: kernel.controller }
 

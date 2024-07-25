@@ -1,6 +1,6 @@
 <?php
 
-namespace DataDog\AuditBundle\EventSubscriber;
+namespace DataDog\AuditBundle\EventListener;
 
 use DataDog\AuditBundle\DBAL\AuditLogger;
 use DataDog\AuditBundle\Entity\AuditLog;
@@ -12,14 +12,18 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Logging\LoggerChain;
 use Doctrine\DBAL\Logging\SQLLogger;
-use Doctrine\Common\EventSubscriber;
+use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Events;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnFlushEventArgs;
+use Doctrine\Persistence\Event\LifecycleEventArgs;
 
-class AuditSubscriber implements EventSubscriber
+#[AsDoctrineListener('onFlush'/*, 500, 'default'*/)]
+class AuditListener
 {
     protected $labeler;
 
@@ -50,10 +54,14 @@ class AuditSubscriber implements EventSubscriber
     /** @var UserInterface */
     protected $blameUser;
 
-    public function __construct(TokenStorageInterface $securityTokenStorage, ContainerInterface $container)
+    /** @var EntityManagerInterface */
+    protected $em;
+
+    public function __construct(TokenStorageInterface $securityTokenStorage, ContainerInterface $container, EntityManagerInterface $em)
     {
         $this->container = $container;
         $this->securityTokenStorage = $securityTokenStorage;
+        $this->em = $em;        
     }
 
     public function setLabeler(callable $labeler = null)
@@ -121,10 +129,12 @@ class AuditSubscriber implements EventSubscriber
         return $isEntityUnaudited;
     }
 
-    public function onFlush(OnFlushEventArgs $args)
+    public function onFlush(OnFlushEventArgs $eventArgs)
     {
-        $em = $args->getEntityManager();
+        $em = $eventArgs->getObjectManager();
         $uow = $em->getUnitOfWork();
+
+        // dd($uow);
 
         // extend the sql logger
         $this->old = $em->getConnection()->getConfiguration()->getSQLLogger();
@@ -139,7 +149,7 @@ class AuditSubscriber implements EventSubscriber
         $new = new LoggerChain($loggers);
 
         $em->getConnection()->getConfiguration()->setSQLLogger($new);
-
+        
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             if ($this->isEntityUnaudited($entity)) {
                 continue;
@@ -164,7 +174,7 @@ class AuditSubscriber implements EventSubscriber
                 continue;
             }
             $mapping = $collection->getMapping();
-            if (!$mapping['isOwningSide'] || $mapping['type'] !== ClassMetadataInfo::MANY_TO_MANY) {
+            if (!$mapping['isOwningSide'] || $mapping['type'] !== ClassMetadata::MANY_TO_MANY) {
                 continue; // ignore inverse side or one to many relations
             }
             foreach ($collection->getInsertDiff() as $entity) {
@@ -185,7 +195,7 @@ class AuditSubscriber implements EventSubscriber
                 continue;
             }
             $mapping = $collection->getMapping();
-            if (!$mapping['isOwningSide'] || $mapping['type'] !== ClassMetadataInfo::MANY_TO_MANY) {
+            if (!$mapping['isOwningSide'] || $mapping['type'] !== ClassMetadata::MANY_TO_MANY) {
                 continue; // ignore inverse side or one to many relations
             }
             foreach ($collection->toArray() as $entity) {
@@ -370,7 +380,7 @@ class AuditSubscriber implements EventSubscriber
                 $this->assocInsertStmt->execute();
                 // use id generator, it will always use identity strategy, since our
                 // audit association explicitly sets that.
-                $data[$field] = $meta->idGenerator->generate($logginem, null);
+                $data[$field] = $meta->idGenerator->generateId($logginem, null);
             }
 
             $meta = $logginem->getClassMetadata(AuditLog::class);

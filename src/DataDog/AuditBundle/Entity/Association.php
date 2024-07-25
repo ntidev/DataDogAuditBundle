@@ -5,54 +5,64 @@ namespace DataDog\AuditBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity
- * @ORM\Entity(repositoryClass="DataDog\AuditBundle\Repository\AssociationRepository")
- * @ORM\Table(name="audit_associations")
+ * 
+ * Association
+ * 
  */
+#[ORM\Table(name: 'audit_associations')]
+#[ORM\Entity(repositoryClass: 'DataDog\AuditBundle\Repository\AssociationRepository')]
+#[ORM\HasLifecycleCallbacks()]
 class Association
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="bigint")
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @var bigint
      */
+    #[ORM\Column(name: 'id', type: 'bigint')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
-     * @ORM\Column(length=128)
+     * 
      */
+    #[ORM\Column(length: 128)]
     private $typ;
 
     /**
-     * @ORM\Column(length=128)
+     * 
      */
+    #[ORM\Column(length: 128)]
     private $tbl;
 
     /**
-     * @ORM\Column(nullable=true)
+     * 
      */
+    #[ORM\Column(nullable: true)]
     private $label;
 
     /**
-     * @ORM\Column
+     * 
      */
+    #[ORM\Column()]
     private $fk;
 
     /**
-     * @ORM\Column
+     * 
      */
+    #[ORM\Column()]
     private $class;
 
     /**
-     *@ORM\Column(type="datetime")
+     *  @var datetime
      */
+    #[ORM\Column(type: 'datetime')]
     private $createdOn;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="app_name", type="text", nullable=true)
+     * 
      */
+    #[ORM\Column(name: 'app_name', type: 'text', nullable: true)]
     private $appName;
     
     /**

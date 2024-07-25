@@ -5,6 +5,10 @@ namespace DataDog\AuditBundle\Command;
 use DataDog\AuditBundle\Entity\Association;
 use DataDog\AuditBundle\Entity\AuditLog;
 use DataDog\AuditBundle\Entity\AuditRequest;
+use DataDog\AuditBundle\Repository\AssociationRepository;
+use DataDog\AuditBundle\Repository\AuditLogRepository;
+use DataDog\AuditBundle\Repository\AuditRequestRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,11 +18,27 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class DeleteAuditCommand extends Command
 {
-    private $container;
+    /** @var EntityManagerInterface */
+    private $em;
+
+    /** @var AssociationRepository */
+    private $associationRepository;
+
+    /** @var AuditLogRepository */
+    private $auditLogRepository;
+
+    /** @var AuditRequestRepository */
+    private $auditRequestRepository;
     
-    public function __construct(ContainerInterface $container)
+    public function __construct(EntityManagerInterface $em, 
+    AssociationRepository $associationRepository,
+    AuditLogRepository $auditLogRepository,
+    AuditRequestRepository $auditRequestRepository)
     {
-        $this->container = $container;
+        $this->em = $em;
+        $this->associationRepository = $associationRepository;
+        $this->auditLogRepository = $auditLogRepository;
+        $this->auditRequestRepository = $auditRequestRepository;
         parent::__construct();
     }
     
@@ -47,33 +67,33 @@ class DeleteAuditCommand extends Command
         $dateModify->setTime(0,0,0);
 
         // Delete
-        $connectionName = $this->container->getParameter('nti_audit.database.connection_name');
-        $em = $this->container->get('doctrine')->getManager($connectionName);
+        // $connectionName = $this->container->getParameter('nti_audit.database.connection_name');
+        // $em = $this->container->get('doctrine')->getManager($connectionName);
 
-        $associations = $em->getRepository(Association::class)->findAudit($dateModify, $date);
+        $associations = $this->associationRepository->findAudit($dateModify, $date);
     
         if($associations){
             foreach ($associations as $association){
-                $em->remove($association);
+                $this->em->remove($association);
             }
         }
 
-        $auditLogs = $em->getRepository(AuditLog::class)->findAudit($dateModify,$date);
+        $auditLogs = $this->auditLogRepository->findAudit($dateModify,$date);
         if($auditLogs){
             foreach ($auditLogs as $auditLog){
-                $em->remove($auditLog);
+                $this->em->remove($auditLog);
             }
         }
 
-        $auditRequests = $em->getRepository(AuditRequest::class)->findAudit($dateModify,$date);
+        $auditRequests = $this->auditRequestRepository->findAudit($dateModify,$date);
         if($auditRequests){
            foreach ($auditRequests as $auditRequest){
-                $em->remove($auditRequest);
+                $this->em->remove($auditRequest);
            }
         }
 
         try {
-            $em->flush();
+            $this->em->flush();
             $output->writeln("<info>The Audit was deleted</info>");
         }catch(\Exception $ex){
             $output->writeln("<error>An error occurred while delete: ".$ex->getMessage()."</error>");

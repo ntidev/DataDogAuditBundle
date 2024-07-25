@@ -2,9 +2,7 @@
 
 namespace DataDog\AuditBundle\DBAL;
 
-use Doctrine\DBAL\Logging\SQLLogger;
-
-class AuditLogger implements SQLLogger
+class AuditLogger
 {
     /**
      * @var callable

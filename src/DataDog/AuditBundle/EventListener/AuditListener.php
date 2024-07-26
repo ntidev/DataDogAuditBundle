@@ -174,9 +174,15 @@ class AuditListener
                 continue;
             }
             $mapping = $collection->getMapping();
-            if (!$mapping['isOwningSide'] || $mapping['type'] !== ClassMetadata::MANY_TO_MANY) {
-                continue; // ignore inverse side or one to many relations
+            if(gettype($mapping) == 'object'){
+                $mapping = (array) $mapping;
             }
+            
+            if(array_key_exists('isOwningSide', $mapping) && array_key_exists('type', $mapping)){
+                if (!$mapping['isOwningSide'] || $mapping['type'] !== ClassMetadata::MANY_TO_MANY) {
+                    continue; // ignore inverse side or one to many relations
+                }
+            } 
             foreach ($collection->getInsertDiff() as $entity) {
                 if ($this->isEntityUnaudited($entity)) {
                     continue;

@@ -12,17 +12,13 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Logging\LoggerChain;
 use Doctrine\DBAL\Logging\SQLLogger;
-use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnFlushEventArgs;
-use Doctrine\Persistence\Event\LifecycleEventArgs;
 
-#[AsDoctrineListener('onFlush'/*, 500, 'default'*/)]
 class AuditListener
 {
     protected $labeler;

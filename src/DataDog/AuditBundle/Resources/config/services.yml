@@ -14,7 +14,7 @@ services:
     class: DataDog\AuditBundle\EventListener\AuditListener
     arguments: ["@security.token_storage", "@service_container", "@doctrine.orm.entity_manager"]
     tags:
-      - { name: doctrine.event_listener, event: flush }
+      - { name: doctrine.event_listener, event: onFlush }
 
   datadog.event_listener.audit_controller:
     class: DataDog\AuditBundle\EventListener\ControllerListener

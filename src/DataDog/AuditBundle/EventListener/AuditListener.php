@@ -275,7 +275,7 @@ class AuditListener
             'action' => 'associate',
             'blame' => $this->blame($em),
             'diff' => null,
-            'tbl' => $mapping['joinTable']['name'],
+            'tbl' => array_key_exists('joinTable', $mapping) ? $mapping['joinTable']['name'] : $mapping['fieldName'],
             'appName' => $app_name
         ]);
     }
@@ -290,7 +290,7 @@ class AuditListener
             'action' => 'dissociate',
             'blame' => $this->blame($em),
             'diff' => null,
-            'tbl' => $mapping['joinTable']['name'],
+            'tbl' => array_key_exists('joinTable', $mapping) ? $mapping['joinTable']['name'] : $mapping['fieldName'],
             'appName' => $app_name
         ]);
     }

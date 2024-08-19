@@ -133,7 +133,7 @@ class AuditListener
         // dd($uow);
 
         // extend the sql logger
-        $this->old = $em->getConnection()->getConfiguration()->getSQLLogger();
+        $this->old = $em->getConnection()->getConfiguration()->getMiddlewares();
         $loggers = [new AuditLogger(function () use($em) {
             $this->flush($em);
         })];
@@ -144,7 +144,7 @@ class AuditListener
 
         $new = new LoggerChain($loggers);
 
-        $em->getConnection()->getConfiguration()->setSQLLogger($new);
+        $em->getConnection()->getConfiguration()->getMiddlewares();
         
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             if ($this->isEntityUnaudited($entity)) {
@@ -211,7 +211,7 @@ class AuditListener
 
     protected function flush(EntityManager $em)
     {
-        $em->getConnection()->getConfiguration()->setSQLLogger($this->old);
+        $em->getConnection()->getConfiguration()->getMiddlewares();
 
         // Entity Manager for logging -
         $connectionName = $this->container->getParameter('nti_audit.database.connection_name');

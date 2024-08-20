@@ -11,6 +11,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Logging\LoggerChain;
+use Doctrine\DBAL\Logging\Middleware;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Events;
@@ -138,13 +139,13 @@ class AuditListener
             $this->flush($em);
         })];
 
-        if ($this->old instanceof SQLLogger) {
+        if ($this->old instanceof Middleware) {
             $loggers[] = $this->old;
         }
 
-        $new = new LoggerChain($loggers);
+        // $new = new LoggerChain($loggers);
 
-        $em->getConnection()->getConfiguration()->getMiddlewares();
+        $em->getConnection()->getConfiguration()->setMiddlewares($loggers);
         
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             if ($this->isEntityUnaudited($entity)) {

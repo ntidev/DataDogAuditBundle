@@ -143,8 +143,6 @@ class AuditListener
             $loggers[] = $this->old;
         }
 
-        // $new = new LoggerChain($loggers);
-
         $em->getConnection()->getConfiguration()->setMiddlewares($loggers);
         
         foreach ($uow->getScheduledEntityUpdates() as $entity) {

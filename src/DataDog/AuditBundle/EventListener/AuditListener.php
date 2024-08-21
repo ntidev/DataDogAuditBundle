@@ -412,10 +412,10 @@ class AuditListener
     protected function id(EntityManager $em, $entity)
     {
         $meta = $em->getClassMetadata(get_class($entity));
-        $pk = $meta->getSingleIdentifierFieldName();
+        $pk = $meta->getIdentifier()[0];
         $pk = $this->value(
             $em,
-            Type::getType($meta->fieldMappings[$pk]['type']),
+            Type::getType($meta->fieldMappings[$pk]->type),
             $meta->getReflectionProperty($pk)->getValue($entity)
         );
         return $pk;

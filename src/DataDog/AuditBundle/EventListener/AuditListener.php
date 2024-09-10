@@ -12,20 +12,21 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Logging\LoggerChain;
 use Doctrine\DBAL\Logging\Middleware;
-use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Event\OnFlushEventArgs;
+use Firehed\DbalLogger\QueryLogger;
+use Psr\Log\NullLogger;
 
 class AuditListener
 {
     protected $labeler;
 
     /**
-     * @var SQLLogger
+     * @var QueryLogger
      */
     protected $old;
 
@@ -131,19 +132,23 @@ class AuditListener
         $em = $eventArgs->getObjectManager();
         $uow = $em->getUnitOfWork();
 
+        $em->getConnection()->getConfiguration()->getMiddlewares(new Middleware(new NullLogger()));
+
         // dd($uow);
 
         // extend the sql logger
-        $this->old = $em->getConnection()->getConfiguration()->getMiddlewares();
+        $this->old = $em->getConnection()->getConfiguration()->getSQLLogger();
         $loggers = [new AuditLogger(function () use($em) {
             $this->flush($em);
         })];
 
-        if ($this->old instanceof Middleware) {
+        if ($this->old instanceof QueryLogger) {
             $loggers[] = $this->old;
         }
 
-        $em->getConnection()->getConfiguration()->setMiddlewares($loggers);
+        $new = new LoggerChain($loggers);
+
+        $em->getConnection()->getConfiguration()->setSQLLogger($new);
         
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             if ($this->isEntityUnaudited($entity)) {
@@ -210,7 +215,7 @@ class AuditListener
 
     protected function flush(EntityManager $em)
     {
-        $em->getConnection()->getConfiguration()->getMiddlewares();
+        $em->getConnection()->getConfiguration()->getMiddlewares(new Middleware(new NullLogger()));
 
         // Entity Manager for logging -
         $connectionName = $this->container->getParameter('nti_audit.database.connection_name');

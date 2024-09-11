@@ -35,6 +35,7 @@
     "knplabs/knp-menu-bundle": "^2.0",
     "knplabs/knp-time-bundle": "^1.3",
     "data-dog/pager-bundle": "^0.2",
+    "firehed/dbal-logger": "1.0.1",
 
     "phpunit/phpunit": "~4.7.0|^5.1"
   },

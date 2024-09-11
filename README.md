@@ -13,6 +13,10 @@ managed through standard **ORM** operations.
 
 **NOTE:** audit cannot track DQL or direct SQL updates or delete statement executions.
 
+## Pre-Install
+
+To continue using **Query Loggers** methods within the audit log bundle, Symfony versions up to 6.x require the installation of **firehed/dbal-logger v1.0.1**. Make sure to have this installed before proceeding to the next step.
+
 ## Install
 
 First, install it with composer:

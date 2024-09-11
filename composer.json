@@ -22,7 +22,8 @@
         "doctrine/orm": "^2.13|^3.0",
         "symfony/security-bundle": "^6.4 | ^7.0",
         "symfony/framework-bundle": "^6.4 | ^7.0",
-        "symfony/console": "^6.4 | ^7.0"
+        "symfony/console": "^6.4 | ^7.0",
+        "firehed/dbal-logger": "1.0.1"
     },
     "require-dev": {
         "ext-pdo": "*",

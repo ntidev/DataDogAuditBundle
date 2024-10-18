@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class AuditLogDeleteOldLogsCommand extends Command
+class DeleteOldLogsCommand extends Command
 {
     public const DEFAULT_RETENTION_PERIOD = 'P6M';
 
